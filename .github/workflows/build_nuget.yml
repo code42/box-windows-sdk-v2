@@ -27,4 +27,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: Box.V2.Core.${{ github.run_attempt }}
-          path: .\Box.V2.Core\x64\Release\*
+          path: .\Box.V2.Core\bin\
+          if-no-files-found: error

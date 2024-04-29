@@ -1,7 +1,5 @@
 name: spell-check-lint
 on:
-  #pull_request_target:
-  #  types: [opened, synchronize, edited]
   workflow_dispatch:
 
 jobs:

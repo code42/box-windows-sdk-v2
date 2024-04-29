@@ -20,9 +20,9 @@ jobs:
           dotnet-version: | 
             6.0.x
       - name: Build
-        run: dotnet build .\Box.V2.Core
+        run: dotnet build --configuration Release .\Box.V2.Core
       - name: Pack
-        run: dotnet pack .\Box.V2.Core
+        run: dotnet pack --configuration Release .\Box.V2.Core
       - name: Save Artifacts
         uses: actions/upload-artifact@v4
         with:

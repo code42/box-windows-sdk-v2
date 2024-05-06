@@ -14,6 +14,7 @@ namespace Box.V2.Converter
         private const string WatermarkType = "watermark";
         private const string GroupId = "group_id";
         private const string UserId = "user_id";
+        private const string UserEmail = "user_email";
         private const string FolderId = "folder_id";
         private const string FileId = "file_id";
 
@@ -124,14 +125,13 @@ namespace Box.V2.Converter
                 {
                     return new BoxGroupFolderCollaborationEventSource();
                 }
-                else if (FieldExists(FileId, jObject))
+
+                if (FieldExists(FileId, jObject))
                 {
                     return new BoxGroupFileCollaborationEventSource();
                 }
-                else
-                {
-                    return new BoxGroupEventSource();
-                }
+
+                return new BoxGroupEventSource();
             }
             else if (FieldExists(UserId, jObject) && FieldExists(FileId, jObject))
             {
@@ -140,6 +140,14 @@ namespace Box.V2.Converter
             else if (FieldExists(UserId, jObject) && FieldExists(FolderId, jObject))
             {
                 return new BoxUserFolderCollaborationEventSource();
+            }
+            else if (FieldExists(UserEmail, jObject) && FieldExists(FileId, jObject))
+            {
+                return new BoxExternalUserFileCollaborationEventSource();
+            }
+            else if (FieldExists(UserEmail, jObject) && FieldExists(FolderId, jObject))
+            {
+                return new BoxExternalUserFolderCollaborationEventSource();
             }
 
             return new BoxEntity();
@@ -174,7 +182,7 @@ namespace Box.V2.Converter
 
             // Load JObject from stream
             var jObject = JObject.Load(reader);
-            // The notification_email field for the user object is an object when a value exists and is an empty array when it isn't. The code below converts the empty array to a null value to avoid deserialization issues.  
+            // The notification_email field for the user object is an object when a value exists and is an empty array when it isn't. The code below converts the empty array to a null value to avoid deserialization issues.
             if (jObject["type"] != null && jObject["type"].ToString() == "user" && jObject["notification_email"] != null && jObject["notification_email"].Type == JTokenType.Array)
             {
                 jObject["notification_email"] = null;

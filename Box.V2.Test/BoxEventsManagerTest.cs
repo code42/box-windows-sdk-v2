@@ -70,7 +70,7 @@ namespace Box.V2.Test
         [TestMethod]
         public async Task GetUserEventsFile_ValidResponse()
         {
-            var responseString = "{\"chunk_size\": 1, \"next_stream_position\": 123, \"entries\": [{\"source\":{\"file_id\":\"283257336425\",\"file_name\":\"ScreenShot2018-03-12at5.44.00PM.png\",\"user_id\":\"285663442\",\"user_name\":\"foo\",\"parent\":{\"type\":\"folder\",\"name\":\"AllFiles\",\"id\":\"0\"}},\"created_by\":{\"type\":\"user\",\"id\":\"11111\",\"name\":\"Test User\",\"login\":\"test@user.com\"},\"created_at\":\"2018-03-16T15:12:52-07:00\",\"event_id\":\"85c57bf3-bc15-4d24-93bc-955c796217c8\",\"event_type\":\"COLLABORATION_INVITE\",\"ip_address\":\"UnknownIP\",\"type\":\"event\",\"session_id\":null,\"additional_details\":null}]}";
+            var responseString = "{\"chunk_size\": 1, \"next_stream_position\": 123, \"entries\": [{\"source\":{\"file_id\":\"283257336425\",\"file_name\":\"ScreenShot2018-03-12at5.44.00PM.png\",\"user_id\":\"285663442\",\"user_name\":\"foo\",\"parent\":{\"type\":\"folder\",\"name\":\"AllFiles\",\"id\":\"0\"},\"owned_by\":{\"type\":\"user\",\"id\":\"11111\",\"name\":\"Test User\",\"login\":\"test@user.com\"}},\"created_by\":{\"type\":\"user\",\"id\":\"11111\",\"name\":\"Test User\",\"login\":\"test@user.com\"},\"created_at\":\"2018-03-16T15:12:52-07:00\",\"event_id\":\"85c57bf3-bc15-4d24-93bc-955c796217c8\",\"event_type\":\"COLLABORATION_INVITE\",\"ip_address\":\"UnknownIP\",\"type\":\"event\",\"session_id\":null,\"additional_details\":null}]}";
             IBoxRequest boxRequest = null;
             Handler.Setup(h => h.ExecuteAsync<BoxEventCollection<BoxEnterpriseEvent>>(It.IsAny<IBoxRequest>()))
                 .Returns(Task.FromResult<IBoxResponse<BoxEventCollection<BoxEnterpriseEvent>>>(new BoxResponse<BoxEventCollection<BoxEnterpriseEvent>>()
@@ -88,12 +88,37 @@ namespace Box.V2.Test
             Assert.AreEqual(userFileEvents.Entries[0].Source.GetType(), typeof(BoxUserFileCollaborationEventSource));
             Assert.AreEqual(userFileEventSource.Id, "283257336425");
             Assert.AreEqual(userFileEventSource.Name, "ScreenShot2018-03-12at5.44.00PM.png");
+            Assert.AreEqual(userFileEventSource.OwnedBy.Id, "11111");
+        }
+
+        [TestMethod]
+        public async Task GetUserEventsFile_ExternalUser_ValidResponse()
+        {
+            var responseString = "{\"chunk_size\": 1, \"next_stream_position\": 123, \"entries\": [{\"source\":{\"file_id\":\"283257336425\",\"file_name\":\"ScreenShot2018-03-12at5.44.00PM.png\",\"user_email\": \"external.user@box.com\",\"parent\":{\"type\":\"folder\",\"name\":\"AllFiles\",\"id\":\"0\"},\"owned_by\":{\"type\":\"user\",\"id\":\"11111\",\"name\":\"Test User\",\"login\":\"test@user.com\"}},\"created_by\":{\"type\":\"user\",\"id\":\"11111\",\"name\":\"Test User\",\"login\":\"test@user.com\"},\"created_at\":\"2018-03-16T15:12:52-07:00\",\"event_id\":\"85c57bf3-bc15-4d24-93bc-955c796217c8\",\"event_type\":\"COLLABORATION_INVITE\",\"ip_address\":\"UnknownIP\",\"type\":\"event\",\"session_id\":null,\"additional_details\":null}]}";
+            IBoxRequest boxRequest = null;
+            Handler.Setup(h => h.ExecuteAsync<BoxEventCollection<BoxEnterpriseEvent>>(It.IsAny<IBoxRequest>()))
+                .Returns(Task.FromResult<IBoxResponse<BoxEventCollection<BoxEnterpriseEvent>>>(new BoxResponse<BoxEventCollection<BoxEnterpriseEvent>>()
+                {
+                    Status = ResponseStatus.Success,
+                    ContentString = responseString
+                })).Callback<IBoxRequest>(r => boxRequest = r);
+
+            /*** Act ***/
+            var userFileEvents = await _eventsManager.EnterpriseEventsAsync();
+
+            var externalUserFileCollaborationEventSource = userFileEvents.Entries[0].Source as BoxExternalUserFileCollaborationEventSource;
+
+            Assert.AreEqual(userFileEvents.Entries[0].EventType, "COLLABORATION_INVITE");
+            Assert.AreEqual(userFileEvents.Entries[0].Source.GetType(), typeof(BoxExternalUserFileCollaborationEventSource));
+            Assert.AreEqual(externalUserFileCollaborationEventSource.Id, "283257336425");
+            Assert.AreEqual(externalUserFileCollaborationEventSource.Name, "ScreenShot2018-03-12at5.44.00PM.png");
+            Assert.AreEqual(externalUserFileCollaborationEventSource.OwnedBy.Id, "11111");
         }
 
         [TestMethod]
         public async Task GetUserEventsFolder_ValidResponse()
         {
-            var responseString = "{\"chunk_size\": 1, \"next_stream_position\": 123, \"entries\": [{\"source\":{\"folder_id\":\"47846340014\",\"folder_name\":\"SharedWithServiceAccount\",\"user_id\":\"182069272\",\"user_name\":\"MattWiller\",\"parent\":{\"type\":\"folder\",\"name\":\"AllFiles\",\"id\":\"0\"}},\"created_by\":{\"type\":\"user\",\"id\":\"11111\",\"name\":\"Test User\",\"login\":\"test@user.com\"},\"created_at\":\"2018-03-16T15:12:52-07:00\",\"event_id\":\"85c57bf3-bc15-4d24-93bc-955c796217c8\",\"event_type\":\"COLLABORATION_INVITE\",\"ip_address\":\"UnknownIP\",\"type\":\"event\",\"session_id\":null,\"additional_details\":null}]}";
+            var responseString = "{\"chunk_size\": 1, \"next_stream_position\": 123, \"entries\": [{\"source\":{\"folder_id\":\"47846340014\",\"folder_name\":\"SharedWithServiceAccount\",\"user_id\":\"182069272\",\"user_name\":\"MattWiller\",\"parent\":{\"type\":\"folder\",\"name\":\"AllFiles\",\"id\":\"0\"},\"owned_by\":{\"type\":\"user\",\"id\":\"11111\",\"name\":\"Test User\",\"login\":\"test@user.com\"}},\"created_by\":{\"type\":\"user\",\"id\":\"11111\",\"name\":\"Test User\",\"login\":\"test@user.com\"},\"created_at\":\"2018-03-16T15:12:52-07:00\",\"event_id\":\"85c57bf3-bc15-4d24-93bc-955c796217c8\",\"event_type\":\"COLLABORATION_INVITE\",\"ip_address\":\"UnknownIP\",\"type\":\"event\",\"session_id\":null,\"additional_details\":null}]}";
             IBoxRequest boxRequest = null;
             Handler.Setup(h => h.ExecuteAsync<BoxEventCollection<BoxEnterpriseEvent>>(It.IsAny<IBoxRequest>()))
                 .Returns(Task.FromResult<IBoxResponse<BoxEventCollection<BoxEnterpriseEvent>>>(new BoxResponse<BoxEventCollection<BoxEnterpriseEvent>>()
@@ -111,12 +136,37 @@ namespace Box.V2.Test
             Assert.AreEqual(userFolderEvents.Entries[0].Source.GetType(), typeof(BoxUserFolderCollaborationEventSource));
             Assert.AreEqual(userFolderEventSource.Id, "47846340014");
             Assert.AreEqual(userFolderEventSource.Name, "SharedWithServiceAccount");
+            Assert.AreEqual(userFolderEventSource.OwnedBy.Id, "11111");
+        }
+
+        [TestMethod]
+        public async Task GetUserEventsFolder_ExternalUser_ValidResponse()
+        {
+            var responseString = "{\"chunk_size\": 1, \"next_stream_position\": 123, \"entries\": [{\"source\":{\"folder_id\":\"47846340014\",\"folder_name\":\"SharedWithServiceAccount\",\"user_email\": \"external.user@box.com\",\"parent\":{\"type\":\"folder\",\"name\":\"AllFiles\",\"id\":\"0\"},\"owned_by\":{\"type\":\"user\",\"id\":\"11111\",\"name\":\"Test User\",\"login\":\"test@user.com\"}},\"created_by\":{\"type\":\"user\",\"id\":\"11111\",\"name\":\"Test User\",\"login\":\"test@user.com\"},\"created_at\":\"2018-03-16T15:12:52-07:00\",\"event_id\":\"85c57bf3-bc15-4d24-93bc-955c796217c8\",\"event_type\":\"COLLABORATION_INVITE\",\"ip_address\":\"UnknownIP\",\"type\":\"event\",\"session_id\":null,\"additional_details\":null}]}";
+            IBoxRequest boxRequest = null;
+            Handler.Setup(h => h.ExecuteAsync<BoxEventCollection<BoxEnterpriseEvent>>(It.IsAny<IBoxRequest>()))
+                .Returns(Task.FromResult<IBoxResponse<BoxEventCollection<BoxEnterpriseEvent>>>(new BoxResponse<BoxEventCollection<BoxEnterpriseEvent>>()
+                {
+                    Status = ResponseStatus.Success,
+                    ContentString = responseString
+                })).Callback<IBoxRequest>(r => boxRequest = r);
+
+            /*** Act ***/
+            var userFolderEvents = await _eventsManager.EnterpriseEventsAsync();
+
+            var userFolderEventSource = userFolderEvents.Entries[0].Source as BoxExternalUserFolderCollaborationEventSource;
+
+            Assert.AreEqual(userFolderEvents.Entries[0].EventType, "COLLABORATION_INVITE");
+            Assert.AreEqual(userFolderEvents.Entries[0].Source.GetType(), typeof(BoxExternalUserFolderCollaborationEventSource));
+            Assert.AreEqual(userFolderEventSource.Id, "47846340014");
+            Assert.AreEqual(userFolderEventSource.Name, "SharedWithServiceAccount");
+            Assert.AreEqual(userFolderEventSource.OwnedBy.Id, "11111");
         }
 
         [TestMethod]
         public async Task GetGroupEventsFolder_ValidResponse()
         {
-            var responseString = "{\"chunk_size\": 1, \"next_stream_position\": 123, \"entries\": [{\"source\":{\"folder_id\":\"47846340014\",\"folder_name\":\"SharedWithServiceAccount\",\"group_id\":\"182069272\",\"group_name\":\"TestGroup\",\"parent\":{\"type\":\"folder\",\"name\":\"AllFiles\",\"id\":\"0\"}},\"created_by\":{\"type\":\"user\",\"id\":\"275035869\",\"name\":\"MattWiller\",\"login\":\"mwiller + appusers@box.com\"},\"created_at\":\"2018-03-16T15:12:52-07:00\",\"event_id\":\"85c57bf3-bc15-4d24-93bc-955c796217c8\",\"event_type\":\"COLLABORATION_INVITE\",\"ip_address\":\"UnknownIP\",\"type\":\"event\",\"session_id\":null,\"additional_details\":null}]}";
+            var responseString = "{\"chunk_size\": 1, \"next_stream_position\": 123, \"entries\": [{\"source\":{\"folder_id\":\"47846340014\",\"folder_name\":\"SharedWithServiceAccount\",\"group_id\":\"182069272\",\"group_name\":\"TestGroup\",\"parent\":{\"type\":\"folder\",\"name\":\"AllFiles\",\"id\":\"0\"},\"owned_by\":{\"type\":\"user\",\"id\":\"275035869\",\"name\":\"MattWiller\",\"login\":\"mwiller + appusers@box.com\"}},\"created_by\":{\"type\":\"user\",\"id\":\"275035869\",\"name\":\"MattWiller\",\"login\":\"mwiller + appusers@box.com\"},\"created_at\":\"2018-03-16T15:12:52-07:00\",\"event_id\":\"85c57bf3-bc15-4d24-93bc-955c796217c8\",\"event_type\":\"COLLABORATION_INVITE\",\"ip_address\":\"UnknownIP\",\"type\":\"event\",\"session_id\":null,\"additional_details\":null}]}";
             IBoxRequest boxRequest = null;
             Handler.Setup(h => h.ExecuteAsync<BoxEventCollection<BoxEnterpriseEvent>>(It.IsAny<IBoxRequest>()))
                 .Returns(Task.FromResult<IBoxResponse<BoxEventCollection<BoxEnterpriseEvent>>>(new BoxResponse<BoxEventCollection<BoxEnterpriseEvent>>()
@@ -134,12 +184,13 @@ namespace Box.V2.Test
             Assert.AreEqual(groupFolderEvents.Entries[0].Source.GetType(), typeof(BoxGroupFolderCollaborationEventSource));
             Assert.AreEqual(groupFolderEventSource.Id, "47846340014");
             Assert.AreEqual(groupFolderEventSource.GroupName, "TestGroup");
+            Assert.AreEqual(groupFolderEventSource.OwnedBy.Id, "275035869");
         }
 
         [TestMethod]
         public async Task GetGroupEventsFile_ValidResponse()
         {
-            var responseString = "{\"chunk_size\": 1, \"next_stream_position\": 123, \"entries\": [{\"source\":{\"file_id\":\"47846340014\",\"file_name\":\"test-picture.jpg\",\"group_id\":\"182069272\",\"group_name\":\"TestGroup\"},\"created_by\":{\"type\":\"user\",\"id\":\"11111\",\"name\":\"Test User\",\"login\":\"test@user.com\"},\"created_at\":\"2018-03-16T15:12:52-07:00\",\"event_id\":\"85c57bf3-bc15-4d24-93bc-955c796217c8\",\"event_type\":\"COLLABORATION_INVITE\",\"ip_address\":\"UnknownIP\",\"type\":\"event\",\"session_id\":null,\"additional_details\":null}]}";
+            var responseString = "{\"chunk_size\": 1, \"next_stream_position\": 123, \"entries\": [{\"source\":{\"file_id\":\"47846340014\",\"file_name\":\"test-picture.jpg\",\"group_id\":\"182069272\",\"group_name\":\"TestGroup\",\"owned_by\":{\"type\":\"user\",\"id\":\"11111\",\"name\":\"Test User\",\"login\":\"test@user.com\"}},\"created_by\":{\"type\":\"user\",\"id\":\"11111\",\"name\":\"Test User\",\"login\":\"test@user.com\"},\"created_at\":\"2018-03-16T15:12:52-07:00\",\"event_id\":\"85c57bf3-bc15-4d24-93bc-955c796217c8\",\"event_type\":\"COLLABORATION_INVITE\",\"ip_address\":\"UnknownIP\",\"type\":\"event\",\"session_id\":null,\"additional_details\":null}]}";
             IBoxRequest boxRequest = null;
             Handler.Setup(h => h.ExecuteAsync<BoxEventCollection<BoxEnterpriseEvent>>(It.IsAny<IBoxRequest>()))
                 .Returns(Task.FromResult<IBoxResponse<BoxEventCollection<BoxEnterpriseEvent>>>(new BoxResponse<BoxEventCollection<BoxEnterpriseEvent>>()
@@ -157,6 +208,7 @@ namespace Box.V2.Test
             Assert.AreEqual(groupFileEvents.Entries[0].Source.GetType(), typeof(BoxGroupFileCollaborationEventSource));
             Assert.AreEqual(groupFileEventSource.Id, "47846340014");
             Assert.AreEqual(groupFileEventSource.Name, "test-picture.jpg");
+            Assert.AreEqual(groupFileEventSource.OwnedBy.Id, "11111");
         }
 
         [TestMethod]

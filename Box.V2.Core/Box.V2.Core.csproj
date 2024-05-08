@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Description>Box.V2 for .Net Core</Description>
+    <Description>Code42 Version of Box.V2 for .Net Core</Description>
     <AssemblyTitle>Box.V2.Core</AssemblyTitle>
     <Version>5.7.0</Version>
     <Authors>Box, Inc.</Authors>
@@ -15,7 +15,7 @@
 	<PackageTags>Box;V2;SDK;Platform;Enterprise;Collaboration;Storage;File Management</PackageTags>
     <TargetFramework>netstandard2.0</TargetFramework>
     <AssemblyName>Box.V2.Core</AssemblyName>
-    <PackageId>Box.V2.Core</PackageId>
+    <PackageId>Code42.Box.V2.Core</PackageId>
     <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
     <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
     <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>

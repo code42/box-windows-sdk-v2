@@ -17,11 +17,6 @@ namespace Box.V2.Models
         public override string Id { get; protected set; }
 
         /// <summary>
-        /// The type of the object.
-        /// </summary>
-        public override string Type { get { return "file"; } protected set { return; } }
-
-        /// <summary>
         /// The name of the file being collaborated on.
         /// </summary>
         [JsonProperty(PropertyName = FieldFileName)]

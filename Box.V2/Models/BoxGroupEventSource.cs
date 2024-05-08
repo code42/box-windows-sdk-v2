@@ -17,12 +17,7 @@ namespace Box.V2.Models
         public override string Id { get; protected set; }
 
         /// <summary>
-        /// The type of the object.
-        /// </summary>
-        public override string Type { get { return "group"; } protected set { return; } }
-
-        /// <summary>
-        /// The name of the group resource. 
+        /// The name of the group resource.
         /// </summary>
         [JsonProperty(PropertyName = FieldGroupName)]
         public string Name { get; private set; }

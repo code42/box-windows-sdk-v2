@@ -21,11 +21,6 @@ namespace Box.V2.Models
         public override string Id { get; protected set; }
 
         /// <summary>
-        /// The type of the object.
-        /// </summary>
-        public override string Type { get { return "folder"; } protected set { return; } }
-
-        /// <summary>
         /// The name of the folder  being collaborated on.
         /// </summary>
         [JsonProperty(PropertyName = FieldFolderName)]
